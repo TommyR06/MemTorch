@@ -6,6 +6,8 @@ data/
 dist/
 MemTorch.egg-info/
 MemTorch_cpu.egg-info/
+memtorch.egg-info/
+memtorch_cpu.egg-info/
 **/__pycache__/
 .ipynb_checkpoints
 memtorch/examples/reproduce/*.csv
@@ -20,3 +22,4 @@ venv/
 .idea/
 /memtorch.egg-info/
 *.csv
+memtorch_bindings.cpython-39-x86_64-linux-gnu.so
