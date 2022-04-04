@@ -48,6 +48,7 @@ def apply_finite_conductance_states(layer, n_conductance_states):
             )
             r_off[r_off == 0] = crossbar.r_off_mean
             if np.unique(r_on).size == 1:
+                # print(f'r_on unique: {crossbar.r_on_mean}')
                 r_on = torch.ones(
                     crossbar.conductance_matrix.shape, device=device
                 ).float() * float(crossbar.r_on_mean)
@@ -55,6 +56,7 @@ def apply_finite_conductance_states(layer, n_conductance_states):
                 r_on = torch.from_numpy(r_on).float().cuda()
 
             if np.unique(r_off).size == 1:
+                # print(f'r_off unique: {crossbar.r_off_mean}')
                 r_off = torch.ones(
                     crossbar.conductance_matrix.shape, device=device
                 ).float() * float(crossbar.r_off_mean)
@@ -62,18 +64,33 @@ def apply_finite_conductance_states(layer, n_conductance_states):
                 r_off = torch.from_numpy(r_off).float().cuda()
 
             conductance_matrix_shape = crossbar.conductance_matrix.shape
+
+            # crossbar.conductance_matrix = (
+            #     memtorch.bh.Quantize.quantize(
+            #         crossbar.conductance_matrix.view(-1),
+            #         n_conductance_states,
+            #         min=1 / r_off.view(-1),
+            #         max=1 / r_on.view(-1),
+            #         override_original=True,
+            #     )
+            #     .view(conductance_matrix_shape)
+            #     .float()
+            # )
+
             crossbar.conductance_matrix = (
                 memtorch.bh.Quantize.quantize(
                     crossbar.conductance_matrix.view(-1),
                     n_conductance_states,
-                    min=1 / r_off.view(-1),
-                    max=1 / r_on.view(-1),
+                    min=1 / 25e3,
+                    max=1 / 6666,
                     override_original=True,
                 )
                 .view(conductance_matrix_shape)
                 .float()
             )
-        except:
+
+        except Exception as e:
+            print(f"Error: {e}")
             crossbar.conductance_matrix = conductance_matrix_.float()
 
         return crossbar
