@@ -2,6 +2,8 @@
 #include <cmath>
 #include <torch/extension.h>
 
+#include <iostream>
+
 #include "quantize.h"
 
 void quantize_bindings(py::module_ &m) {

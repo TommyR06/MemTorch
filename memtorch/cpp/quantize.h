@@ -99,16 +99,42 @@ void quantize(at::Tensor tensor, int n_quant_levels, T min = NULL,
   if (max == NULL) {
     max = at::flatten(tensor).max().item<T>();
   }
+
   at::TensorOptions options;
   if (typeid(T) == typeid(float)) {
     options = torch::TensorOptions().dtype(torch::kFloat32);
   } else {
     options = torch::TensorOptions().dtype(torch::kFloat64);
+    // std::cout << "You are working with double" << std::endl << std::endl;
   }
+
   at::Tensor quant_levels = at::linspace(min, max, n_quant_levels, options);
+  // std::cout << "Old quant_levels" << std::endl;
+  // std::cout << quant_levels << std::endl;
+
+  // clang-format off
+
+  double conduct_states [4] = {40E-6f,70E-6f,110E-6f,150E-6f};
+  at::Tensor quant_levels_new = torch::from_blob(conduct_states, {4}, options);
+  // at::Tensor quant_levels_new_2 = torch::from_blob(conduct_states, {4}, torch::TensorOptions().dtype(torch::kFloat64));
+
+  // std::cout << "New quant_levels" << std::endl;
+  // std::cout << "array" << std::endl;
+  // for (const auto& e : conduct_states) {
+    // std::cout << e << std::endl;
+  // }
+
+  // std::cout << "tensor 1" << std::endl;
+  // std::cout << quant_levels_new << std::endl;
+
+  // std::cout << "tensor INPUT" << std::endl;
+  // std::cout << tensor.dtype() << std::endl;
+
+  // clang-format on
+
 #pragma omp parallel for
   for (int i = 0; i < tensor.numel(); i++) {
-    quantize_element<T>(input_tensor_ptr, i, quant_levels.data_ptr<T>(),
+    quantize_element<T>(input_tensor_ptr, i, quant_levels_new.data_ptr<T>(),
                         n_quant_levels);
   }
   return;
@@ -130,6 +156,7 @@ void quantize(at::Tensor tensor, int n_quant_levels, at::Tensor min,
   } else {
     options = torch::TensorOptions().dtype(torch::kFloat64);
   }
+  // std::cout << "You are in the WRONG place.";
 #pragma omp parallel for
   for (int i = 0; i < tensor.numel(); i++) {
     torch::Tensor quant_levels =
@@ -146,6 +173,7 @@ void quantize(at::Tensor tensor, int bits, T overflow_rate,
   parse_min_max(&min, &max);
   T *input_tensor_ptr = tensor.data_ptr<T>();
   T *quantized_tensor_ptr = nullptr;
+  // std::cout << "No way you are here.";
   if ((int)at::numel(std::get<0>(at::unique_consecutive(tensor))) == 1) {
     return;
   } else {
