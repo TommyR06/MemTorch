@@ -29,7 +29,16 @@ def naive_tune(module, input_shape, verbose=True):
     device = torch.device("cpu" if "cpu" in memtorch.__version__ else "cuda")
     tmp = module.bias
     module.bias = None
-    input = torch.rand(input_shape).uniform_(-1, 1).to(device)
+    # the inputs are always scaled in voltage range.
+    # the output linear transformation has to be tuned in that range
+    if module.max_input_voltage is not None:
+        input = (
+            torch.rand(input_shape)
+            .uniform_(-module.max_input_voltage, module.max_input_voltage)
+            .to(device)
+        )
+    else:
+        input = torch.rand(input_shape).uniform_(-1, 1).to(device)
     initial_forward_legacy_state = module.forward_legacy_enabled
     module.forward_legacy_enabled = False
     output = module.forward(input).detach().cpu()
